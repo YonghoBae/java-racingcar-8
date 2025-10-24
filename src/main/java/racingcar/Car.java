@@ -1,6 +1,10 @@
 package racingcar;
 
 public class Car {
+    private static final int MAX_NAME_LENGTH = 5;
+    private static final int STARTING_POSITION = 0;
+    private static final int FORWARD_STEP = 1;
+
     private final String name;
     private int position;
 
