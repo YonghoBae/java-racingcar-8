@@ -2,83 +2,112 @@ package racingcar;
 
 import camp.nextstep.edu.missionutils.Console;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@DisplayName("InputView 단위 테스트")
 class InputViewTest {
 
-    private InputView inputView;
-    private InputStream originalSystemIn;
+    private final InputStream originalSystemIn = System.in;
 
-    @BeforeEach
-    void setUp() {
-        inputView = new InputView();
-        originalSystemIn = System.in;
+    static class AlwaysPassValidatorStub extends Validator {
+        @Override
+        public boolean racingCarNames(String racingCarName) {
+            return true;
+        }
+
+        @Override
+        public boolean raceNumber(String raceNumberStr) {
+            return true;
+        }
+    }
+
+    static class AlwaysFailValidatorStub extends Validator {
+        @Override
+        public boolean racingCarNames(String racingCarName) {
+            return false;
+        }
+
+        @Override
+        public boolean raceNumber(String raceNumberStr) {
+            return false;
+        }
     }
 
     @AfterEach
-    void tearDown() {
-        Console.close();
+    void restoreSystemIn() {
         System.setIn(originalSystemIn);
+        Console.close();
     }
 
-
-    private void mockSystemIn(String input) {
-        String simulatedInput;
-
-        if (input == null) {
-
-            simulatedInput = "\n";
-        } else {
-            simulatedInput = input + "\n";
-        }
-
-        InputStream mockedInputStream = new ByteArrayInputStream(simulatedInput.getBytes());
-        System.setIn(mockedInputStream);
-    }
-
-
-    @Test
-    @DisplayName("시도 횟수로 유효한 값('5')을 입력하면 숫자 5를 반환한다.")
-    void inputRaceNumberSuccess() {
-        String simulatedRaceNumberInput = "5";
-        mockSystemIn(simulatedRaceNumberInput);
-
-        int actualRaceNumber = inputView.inputRaceNumber();
-
-        assertThat(actualRaceNumber).isEqualTo(5);
+    private void setupSystemIn(String input) {
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
     }
 
     @Test
-    @DisplayName("시도 횟수로 경계값('1')을 입력하면 숫자 1을 반환한다.")
-    void inputRaceNumberBoundarySuccess() {
-        String simulatedBoundaryInput = "1";
-        mockSystemIn(simulatedBoundaryInput);
+    @DisplayName("유효한 자동차 이름 입력을 받으면 해당 값을 반환한다")
+    void 유효한_자동차_이름_입력_시_값_반환() {
+        String input = "pobi,woni,jun";
+        setupSystemIn(input + "\n");
+        InputView inputView = new InputView(new AlwaysPassValidatorStub());
 
-        int actualRaceNumber = inputView.inputRaceNumber();
+        String result = inputView.inputRacingCarName();
 
-        assertThat(actualRaceNumber).isEqualTo(1);
+        assertThat(result).isEqualTo(input);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"0", "01", "-1", "abc", "1.5", " 5"})
-    @NullAndEmptySource
-    @DisplayName("시도 횟수로 1 미만의 값이나 숫자가 아닌 값을 입력하면 IllegalArgumentException이 발생한다.")
-    void inputRaceNumberFail(String invalidRaceNumberInput) {
-        mockSystemIn(invalidRaceNumberInput);
+    @Test
+    @DisplayName("유효하지 않은 자동차 이름을 입력 받으면 예외를 던진다")
+    void 유효하지_않은_자동차_이름_입력_시_예외_발생() {
+        String invalidInput = "pobi,javaji";
+        setupSystemIn(invalidInput + "\n");
+        InputView inputView = new InputView(new AlwaysFailValidatorStub());
 
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> inputView.inputRaceNumber())
-                .withMessageContaining("1 이상의 정수여야 합니다.");
+        assertThatThrownBy(inputView::inputRacingCarName)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("자동차 이름은 5자 이하여야 합니다.");
+    }
+
+    @Test
+    @DisplayName("유효한 시도 횟수 입력을 받으면 해당 숫자를 반환한다")
+    void 유효한_시도_횟수_입력_시_숫자_반환() {
+        String input = "5";
+        setupSystemIn(input + "\n");
+        InputView inputView = new InputView(new AlwaysPassValidatorStub());
+
+        int result = inputView.inputRaceNumber();
+
+        assertThat(result).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("유효하지 않은 시도 횟수 입력을 받으면 예외를 던진다")
+    void 유효하지_않은_시도_횟수_입력_시_예외_발생() {
+        String invalidInput = "0";
+        setupSystemIn(invalidInput + "\n");
+        InputView inputView = new InputView(new AlwaysFailValidatorStub());
+
+        assertThatThrownBy(inputView::inputRaceNumber)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("값은 1 이상의 정수여야 합니다.");
+    }
+
+    @Test
+    @DisplayName("시도 횟수가 숫자가 아닌 문자인 경우 예외를 던진다")
+    void 숫자가_아닌_시도_횟수_입력_시_예외_발생() {
+        String invalidInput = "abc";
+        setupSystemIn(invalidInput + "\n");
+        InputView inputView = new InputView(new AlwaysFailValidatorStub());
+
+        assertThatThrownBy(inputView::inputRaceNumber)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("값은 1 이상의 정수여야 합니다.");
     }
 }
+
