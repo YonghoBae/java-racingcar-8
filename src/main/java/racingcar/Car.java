@@ -30,7 +30,7 @@ public class Car {
         return trimmedName;
     }
 
-    public void move() {
+    public void moveForward() {
         this.position += FORWARD_STEP;
     }
 
@@ -40,5 +40,9 @@ public class Car {
 
     public int getPosition() {
         return position;
+    }
+
+    public boolean isAt(int position) {
+        return this.position == position;
     }
 }
