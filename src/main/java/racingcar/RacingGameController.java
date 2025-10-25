@@ -1,5 +1,7 @@
 package racingcar;
 
+import racingcar.exception.RacingCarException;
+
 import java.util.List;
 
 public class RacingGameController {
@@ -23,8 +25,9 @@ public class RacingGameController {
             List<Car> winners = cars.findWinners();
             outputView.printWinners(winners);
 
-        } catch (IllegalArgumentException e) {
+        } catch (RacingCarException e) {
             outputView.printError(e.getMessage());
+            throw e;
         }
     }
 

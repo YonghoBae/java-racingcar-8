@@ -1,5 +1,8 @@
 package racingcar;
 
+import racingcar.exception.ErrorCode;
+import racingcar.exception.RacingCarException;
+
 import java.util.regex.Pattern;
 
 public class RaceRound {
@@ -15,7 +18,7 @@ public class RaceRound {
 
     private void validate(String inputRound) {
         if (inputRound == null || !POSITIVE_INTEGER_PATTERN.matcher(inputRound).matches()) {
-            throw new IllegalArgumentException("시도 횟수는 1 이상의 정수여야 합니다.");
+            throw new RacingCarException(ErrorCode.INVALID_RACE_ROUND);
         }
     }
 

@@ -1,6 +1,8 @@
 package racingcar;
 
 import camp.nextstep.edu.missionutils.Randoms;
+import racingcar.exception.ErrorCode;
+import racingcar.exception.RacingCarException;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,7 +19,7 @@ public class Cars {
 
     public Cars(String inputCarNames){
         if(inputCarNames == null){
-            throw new IllegalArgumentException("자동차 이름 입력이 null입니다.");
+            throw new RacingCarException(ErrorCode.NULL_CAR_NAMES_INPUT);
         }
 
         this.cars = Arrays.stream(inputCarNames.split(NAME_DELIMITER,-1))
@@ -34,7 +36,7 @@ public class Cars {
                 .count();
 
         if(uniqueNameCount != carList.size()){
-            throw new IllegalArgumentException("자동차 이름은 중복될 수 없습니다.");
+            throw new RacingCarException(ErrorCode.DUPLICATE_CAR_NAME);
         }
     }
 

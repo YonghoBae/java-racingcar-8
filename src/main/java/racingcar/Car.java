@@ -1,5 +1,8 @@
 package racingcar;
 
+import racingcar.exception.ErrorCode;
+import racingcar.exception.RacingCarException;
+
 import java.util.Objects;
 
 public class Car {
@@ -11,21 +14,20 @@ public class Car {
     private int position;
 
     public Car(String name) {
-        String trimmedName = validateAndTrim(name);
-        this.name = trimmedName;
+        this.name = validateAndTrim(name);
         this.position = STARTING_POSITION;
     }
 
     private String validateAndTrim(String name) {
         if (Objects.isNull(name)) {
-            throw new IllegalArgumentException("자동차 이름은 null일 수 없습니다.");
+            throw new RacingCarException(ErrorCode.INVALID_CAR_NAME_NULL);
         }
         String trimmedName = name.trim();
         if (trimmedName.isEmpty()) {
-            throw new IllegalArgumentException("자동차 이름은 공백이거나 비어있을 수 없습니다.");
+            throw new RacingCarException(ErrorCode.INVALID_CAR_NAME_EMPTY);
         }
         if (trimmedName.length() > MAX_NAME_LENGTH) {
-            throw new IllegalArgumentException("자동차 이름은 " + MAX_NAME_LENGTH + "자를 초과할 수 없습니다.");
+            throw new RacingCarException(ErrorCode.CAR_NAME_TOO_LONG);
         }
         return trimmedName;
     }
